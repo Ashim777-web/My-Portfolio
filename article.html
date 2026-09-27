@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analyzing a Web Authentication Vulnerability — Ashim Pandey</title>
+<meta name="description" content="A full walkthrough of a broken session-handling flaw found in a practice application.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="reading-progress"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="brand"><span class="brand-mark">//</span> Ashim Pandey</a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="projects.html">Projects</a>
+      <a href="labs.html">Labs</a>
+      <a href="writeups.html" class="active">Write-ups</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="nav-right">
+      <a class="icon-link nav-cta-desktop" href="https://github.com/Ashim777-web" target="_blank" rel="noopener">GitHub ↗</a>
+      <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M1 4H17M1 9H17M1 14H17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="mobile-menu" role="dialog" aria-modal="true" aria-label="Mobile navigation">
+  <div class="mobile-menu-top">
+    <a href="index.html" class="brand"><span class="brand-mark">//</span> Ashim Pandey</a>
+    <button class="mobile-menu-close" aria-label="Close menu">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 1L15 15M15 1L1 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <nav aria-label="Mobile primary">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="projects.html">Projects</a>
+    <a href="labs.html">Labs</a>
+    <a href="writeups.html">Write-ups</a>
+    <a href="skills.html">Skills</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+  <div class="mobile-menu-footer">
+    <a class="btn btn-secondary btn-full" href="https://github.com/Ashim777-web" target="_blank" rel="noopener">GitHub ↗</a>
+    <a class="btn btn-primary btn-full" href="contact.html">Get in touch</a>
+  </div>
+</div>
+
+<main id="main">
+  <section class="page-hero" style="padding-bottom: var(--sp-8);">
+    <div class="container">
+      <a href="writeups.html" class="icon-link">← Back to write-ups</a>
+      <h1 class="h1" style="margin-top: var(--sp-6); max-width:760px;">Analyzing a Web Authentication Vulnerability</h1>
+      <div style="display:flex; gap: var(--sp-4); align-items:center; margin-top: var(--sp-4); flex-wrap:wrap;">
+        <span class="caption">Mar 12, 2026</span>
+        <span class="caption">·</span>
+        <span class="caption">6 min read</span>
+        <span class="badge badge-severity-med">Intermediate</span>
+      </div>
+      <div class="card-tags" style="margin-top: var(--sp-4);">
+        <span class="tag">Web Security</span><span class="tag">Burp Suite</span><span class="tag">Authentication</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top: var(--sp-6);">
+    <div class="container" style="display:grid; grid-template-columns: 200px 1fr; gap: var(--sp-16); align-items:start;">
+
+      <nav class="toc" aria-label="Table of contents">
+        <div class="toc-title">Contents</div>
+        <a href="#context">Context</a>
+        <a href="#discovery">Discovery</a>
+        <a href="#exploitation">Exploitation</a>
+        <a href="#findings">Findings</a>
+        <a href="#lessons">Lessons learned</a>
+        <a href="#references">References</a>
+      </nav>
+
+      <article class="article-body">
+        <h2 id="context">Context</h2>
+        <p>This write-up covers a session-handling flaw I found while working through a deliberately vulnerable training application. The goal wasn't to find something novel — it was to practice a repeatable methodology for authentication testing.</p>
+
+        <h2 id="discovery">Discovery</h2>
+        <p>While reviewing requests in Burp Suite's proxy history, I noticed the session token stayed identical before and after login. That's usually a sign the application isn't regenerating session identifiers on privilege change — a common source of session fixation issues.</p>
+
+        <div class="terminal">
+          <div class="terminal-bar"><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-title">burp — proxy history</span></div>
+          <div class="terminal-body">
+            <span style="color:var(--text-secondary);">Cookie: session=8f14e45fceea167a5a36dedd4bea2543<br>-- after login --<br>Cookie: session=8f14e45fceea167a5a36dedd4bea2543</span>
+          </div>
+        </div>
+
+        <h2 id="exploitation">Exploitation</h2>
+        <p>To confirm the issue was exploitable and not just cosmetic, I captured a pre-authentication session token, handed it to a second browser session, and then completed login in the original session. The second browser inherited authenticated access without ever submitting credentials.</p>
+
+        <div class="code-block">
+          <div class="code-block-head"><span class="caption">http</span><button class="copy-btn" data-copy="GET /dashboard HTTP/1.1&#10;Cookie: session=8f14e45fceea167a5a36dedd4bea2543">Copy</button></div>
+          <pre>GET /dashboard HTTP/1.1
+Cookie: session=8f14e45fceea167a5a36dedd4bea2543</pre>
+        </div>
+
+        <h2 id="findings">Findings</h2>
+        <div class="callout error">
+          <h4>Session Fixation — Medium Severity</h4>
+          <p>The application does not rotate the session identifier after authentication, allowing an attacker who can set a victim's session token to hijack the session once the victim logs in.</p>
+        </div>
+
+        <h2 id="lessons">Lessons learned</h2>
+        <p>This was a good reminder to check the boring things first — token behavior around login/logout is an easy, high-value check before moving on to more complex authentication logic. I also learned to always validate a finding with a second browser context rather than assuming from the request history alone.</p>
+
+        <h2 id="references">References</h2>
+        <ol>
+          <li>OWASP — Session Management Cheat Sheet</li>
+          <li>PortSwigger Web Security Academy — Session Fixation</li>
+        </ol>
+      </article>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-bottom" style="border-top:none; padding-top:0;">
+      <span>© 2026 Ashim Pandey. Built with HTML, CSS &amp; vanilla JS.</span>
+      <span class="footer-status"><span class="dot"></span> Available for opportunities</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

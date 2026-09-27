@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 02 — Linux Fundamentals for Security — Ashim Pandey</title>
+<meta name="description" content="Practicing Linux file management, permissions, users, processes, and networking on Kali Linux, in an isolated VirtualBox lab.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="reading-progress"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="brand"><span class="brand-mark">//</span> Ashim Pandey</a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="projects.html">Projects</a>
+      <a href="labs.html">Labs</a>
+      <a href="writeups.html" class="active">Write-ups</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="nav-right">
+      <a class="icon-link nav-cta-desktop" href="https://github.com/yourusername" target="_blank" rel="noopener">GitHub ↗</a>
+      <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M1 4H17M1 9H17M1 14H17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="mobile-menu" role="dialog" aria-modal="true" aria-label="Mobile navigation">
+  <div class="mobile-menu-top">
+    <a href="index.html" class="brand"><span class="brand-mark">//</span> Ashim Pandey</a>
+    <button class="mobile-menu-close" aria-label="Close menu">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 1L15 15M15 1L1 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <nav aria-label="Mobile primary">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="projects.html">Projects</a>
+    <a href="labs.html">Labs</a>
+    <a href="writeups.html">Write-ups</a>
+    <a href="skills.html">Skills</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+  <div class="mobile-menu-footer">
+    <a class="btn btn-secondary btn-full" href="https://github.com/yourusername" target="_blank" rel="noopener">GitHub ↗</a>
+    <a class="btn btn-primary btn-full" href="contact.html">Get in touch</a>
+  </div>
+</div>
+
+<main id="main">
+  <section class="page-hero" style="padding-bottom: var(--sp-8);">
+    <div class="container">
+      <a href="writeups.html" class="icon-link">← Back to write-ups</a>
+      <h1 class="h1" style="margin-top: var(--sp-6); max-width:760px;">Lab 02 — Linux Fundamentals for Security</h1>
+      <div style="display:flex; gap: var(--sp-4); align-items:center; margin-top: var(--sp-4); flex-wrap:wrap;">
+        <span class="caption">Sept 2026</span>
+        <span class="caption">·</span>
+        <span class="caption">7 min read</span>
+        <span class="badge badge-severity-low">Beginner</span>
+      </div>
+      <div class="card-tags" style="margin-top: var(--sp-4);">
+        <span class="tag">Linux</span><span class="tag">Permissions</span><span class="tag">Networking</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top: var(--sp-6);">
+    <div class="container" style="display:grid; grid-template-columns: 200px 1fr; gap: var(--sp-16); align-items:start;">
+
+      <nav class="toc" aria-label="Table of contents">
+        <div class="toc-title">Contents</div>
+        <a href="#objective">Objective</a>
+        <a href="#environment">Environment</a>
+        <a href="#file-management">1. File &amp; Directory Mgmt</a>
+        <a href="#permissions">2. File Permissions</a>
+        <a href="#users-sudo">3. Users, Groups &amp; sudo</a>
+        <a href="#processes">4. Processes &amp; Services</a>
+        <a href="#networking">5. Basic Networking</a>
+        <a href="#result">Result</a>
+        <a href="#what-i-learned">What I Learned</a>
+        <a href="#screenshots">Screenshots</a>
+      </nav>
+
+      <article class="article-body">
+        <h2 id="objective">Objective</h2>
+        <p>Learn basic Linux commands and security concepts that are useful for cybersecurity and penetration testing.</p>
+
+        <h2 id="environment">Environment</h2>
+        <ul>
+          <li><strong>OS:</strong> Kali Linux 2026.2</li>
+          <li><strong>Virtualization:</strong> Oracle VirtualBox</li>
+          <li><strong>Network:</strong> VirtualBox Host-Only</li>
+          <li><strong>Kali IP:</strong> <code>192.168.56.101</code></li>
+          <li><strong>Metasploitable IP:</strong> <code>192.168.56.102</code></li>
+        </ul>
+
+        <h2 id="file-management">1. File &amp; Directory Management</h2>
+        <p>Created a working directory and files using:</p>
+        <div class="code-block">
+          <div class="code-block-head"><span class="caption">bash</span><button class="copy-btn" data-copy="mkdir cyberlab&#10;touch notes.txt&#10;ls -l">Copy</button></div>
+          <pre>mkdir cyberlab
+touch notes.txt
+ls -l</pre>
+        </div>
+        <p>I also used <code>echo</code> and <code>cat</code> to write and read information from a file.</p>
+
+        <h2 id="permissions">2. Linux File Permissions</h2>
+        <p>Checked file permissions using:</p>
+        <div class="code-block">
+          <div class="code-block-head"><span class="caption">bash</span><button class="copy-btn" data-copy="ls -l notes.txt">Copy</button></div>
+          <pre>ls -l notes.txt</pre>
+        </div>
+        <p>Tested different permission modes:</p>
+        <div class="code-block">
+          <div class="code-block-head"><span class="caption">bash</span><button class="copy-btn" data-copy="chmod 600 notes.txt&#10;chmod 644 notes.txt">Copy</button></div>
+          <pre>chmod 600 notes.txt
+chmod 644 notes.txt</pre>
+        </div>
+        <div class="callout">
+          <h4>What I learned</h4>
+          <p>Linux permissions control access for the owner, the group, and others. For example, <code>644</code> gives the owner read/write access while the group and others have read-only access.</p>
+        </div>
+
+        <h2 id="users-sudo">3. Users, Groups &amp; sudo</h2>
+        <p>Checked the current user:</p>
+        <div class="code-block">
+          <div class="code-block-head"><span class="caption">bash</span><button class="copy-btn" data-copy="whoami">Copy</button></div>
+          <pre>whoami</pre>
+        </div>
+        <p>Checked user and group information:</p>
+        <div class="code-block">
+          <div class="code-block-head"><span class="caption">bash</span><button class="copy-btn" data-copy="id&#10;groups">Copy</button></div>
+          <pre>id
+groups</pre>
+        </div>
+        <p>Tested elevated privileges:</p>
+        <div class="terminal">
+          <div class="terminal-bar"><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-title">kali@kali:~</span></div>
+          <div class="terminal-body">
+            <span class="terminal-prompt">$</span> sudo whoami<br>
+            <span style="color:var(--text-secondary);">root</span>
+          </div>
+        </div>
+        <div class="callout">
+          <h4>What I learned</h4>
+          <p><code>sudo</code> allows an authorized user to execute commands with elevated privileges.</p>
+        </div>
+
+        <h2 id="processes">4. Processes &amp; Services</h2>
+        <p>Viewed running processes:</p>
+        <div class="code-block">
+          <div class="code-block-head"><span class="caption">bash</span><button class="copy-btn" data-copy="ps aux | head">Copy</button></div>
+          <pre>ps aux | head</pre>
+        </div>
+        <p>Searched for a specific process:</p>
+        <div class="code-block">
+          <div class="code-block-head"><span class="caption">bash</span><button class="copy-btn" data-copy="ps aux | grep bash">Copy</button></div>
+          <pre>ps aux | grep bash</pre>
+        </div>
+        <p>Checked running services:</p>
+        <div class="code-block">
+          <div class="code-block-head"><span class="caption">bash</span><button class="copy-btn" data-copy="systemctl --type=service --state=running">Copy</button></div>
+          <pre>systemctl --type=service --state=running</pre>
+        </div>
+        <div class="callout">
+          <h4>What I learned</h4>
+          <p>Processes are currently running programs, while services are background processes that provide system functionality. Understanding running processes and services is important when performing system enumeration.</p>
+        </div>
+
+        <h2 id="networking">5. Basic Networking</h2>
+        <p>Checked network interfaces:</p>
+        <div class="code-block">
+          <div class="code-block-head"><span class="caption">bash</span><button class="copy-btn" data-copy="ip addr">Copy</button></div>
+          <pre>ip addr</pre>
+        </div>
+        <p>My Kali machine had: <code>192.168.56.101/24</code></p>
+        <p>Checked the routing table:</p>
+        <div class="code-block">
+          <div class="code-block-head"><span class="caption">bash</span><button class="copy-btn" data-copy="ip route">Copy</button></div>
+          <pre>ip route</pre>
+        </div>
+        <p>Tested connectivity to my Metasploitable VM:</p>
+        <div class="terminal">
+          <div class="terminal-bar"><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-title">kali@kali:~</span></div>
+          <div class="terminal-body">
+            <span class="terminal-prompt">$</span> ping -c 4 192.168.56.102<br>
+            <span style="color:var(--text-secondary);">4 packets transmitted<br>4 received<br>0% packet loss</span>
+          </div>
+        </div>
+
+        <h2 id="result">Result</h2>
+        <div class="callout">
+          <h4>Fundamentals confirmed, connectivity holding</h4>
+          <p>Successfully practiced fundamental Linux commands related to files, permissions, users, privileges, processes, services, and networking. The Kali Linux VM successfully communicated with the Metasploitable VM over the isolated Host-only network.</p>
+        </div>
+
+        <h2 id="what-i-learned">What I Learned</h2>
+        <ul>
+          <li>Basic Linux filesystem navigation</li>
+          <li>Creating and managing files</li>
+          <li>Understanding Linux permissions</li>
+          <li>Using <code>chmod</code></li>
+          <li>Understanding users and groups</li>
+          <li>Using <code>sudo</code></li>
+          <li>Viewing processes and services</li>
+          <li>Identifying network interfaces</li>
+          <li>Understanding basic routing</li>
+          <li>Testing network connectivity with <code>ping</code></li>
+        </ul>
+
+        <h2 id="screenshots">Screenshots</h2>
+        <figure>
+          <div style="background: var(--bg-elevated); border:1px solid var(--border-subtle); border-radius: var(--radius-md); height:180px; display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-family:var(--font-mono); font-size:13px;">[ screenshot: chmod 600 / chmod 644 output ]</div>
+          <figcaption>Permissions before and after chmod</figcaption>
+        </figure>
+        <figure>
+          <div style="background: var(--bg-elevated); border:1px solid var(--border-subtle); border-radius: var(--radius-md); height:180px; display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-family:var(--font-mono); font-size:13px;">[ screenshot: whoami / id / sudo whoami ]</div>
+          <figcaption>Users and privilege check</figcaption>
+        </figure>
+        <figure>
+          <div style="background: var(--bg-elevated); border:1px solid var(--border-subtle); border-radius: var(--radius-md); height:180px; display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-family:var(--font-mono); font-size:13px;">[ screenshot: ps aux / systemctl output ]</div>
+          <figcaption>Processes and running services</figcaption>
+        </figure>
+        <figure>
+          <div style="background: var(--bg-elevated); border:1px solid var(--border-subtle); border-radius: var(--radius-md); height:180px; display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-family:var(--font-mono); font-size:13px;">[ screenshot: ip addr / ip route / ping ]</div>
+          <figcaption>Network interfaces, routing, and connectivity test</figcaption>
+        </figure>
+        <p class="caption">Screenshot placeholders above — swap in your real terminal captures for each section.</p>
+
+        <hr class="divider">
+        <p class="body-sm">Next up: <strong>Lab 03 — Network Reconnaissance with Nmap</strong>, where this Kali → Metasploitable setup becomes a proper cybersecurity exercise.</p>
+      </article>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-bottom" style="border-top:none; padding-top:0;">
+      <span>© 2026 Ashim Pandey. Built with HTML, CSS &amp; vanilla JS.</span>
+      <span class="footer-status"><span class="dot"></span> Available for opportunities</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
